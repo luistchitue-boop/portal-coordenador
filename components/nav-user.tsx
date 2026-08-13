@@ -47,13 +47,16 @@ export function NavUser({
             {current ? (
               <>
                 <Avatar className="size-8 rounded-lg grayscale">
-                  <AvatarImage src={current.avatar || session?.user?.image || ""} alt={current.name || session?.user?.name || ""} />
+                  <AvatarImage
+                    src={((current as any)?.avatar as string) || session?.user?.image || ""}
+                    alt={((current as any)?.name as string) || session?.user?.name || ""}
+                  />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{current.name}</span>
+                  <span className="truncate font-medium">{((current as any)?.name as string) || session?.user?.name}</span>
                   <span className="truncate text-xs text-foreground/70">
-                    {current.email}
+                    {((current as any)?.email as string) || session?.user?.email}
                   </span>
                 </div>
                 <EllipsisVerticalIcon className="ml-auto size-4" />
@@ -72,13 +75,16 @@ export function NavUser({
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar className="size-8">
-                    <AvatarImage src={current?.avatar || session?.user?.image || ""} alt={current?.name || session?.user?.name || ""} />
+                    <AvatarImage
+                      src={((current as any)?.avatar as string) || session?.user?.image || ""}
+                      alt={((current as any)?.name as string) || session?.user?.name || ""}
+                    />
                     <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{current?.name || session?.user?.name}</span>
+                    <span className="truncate font-medium">{((current as any)?.name as string) || session?.user?.name}</span>
                     <span className="truncate text-xs text-muted-foreground">
-                      {current?.email || session?.user?.email}
+                      {((current as any)?.email as string) || session?.user?.email}
                     </span>
                   </div>
                 </div>

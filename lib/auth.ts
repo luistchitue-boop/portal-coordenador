@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.sub
+        ;(session.user as any).id = token.sub
       }
       return session
     },
@@ -40,4 +40,15 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 }
 
-export const getServerAuthSession = () => getServerSession(authOptions)
+export async function getServerAuthSession() {
+  try {
+    return await getServerSession(authOptions)
+  } catch (err) {
+    // Log and return null so build/deploy doesn't crash when envs are missing
+    // (e.g., during static builds on Vercel). Ensure you set NEXTAUTH_SECRET
+    // and NEXTAUTH_URL in Vercel environment settings for production.
+    // eslint-disable-next-line no-console
+    console.error("getServerAuthSession error:", err)
+    return null
+  }
+}

@@ -4,10 +4,19 @@ import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+export const dynamic = "force-dynamic"
+
+import { getServerAuthSession } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
 import data from "./data.json"
 
-export default function Page() {
+export default async function Page() {
+  const session = await getServerAuthSession()
+  if (!session) {
+    // If session check fails or user is unauthenticated, redirect to sign-in.
+    redirect("/signin")
+  }
   return (
     <SidebarProvider
       style={
