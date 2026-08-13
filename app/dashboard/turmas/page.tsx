@@ -73,7 +73,7 @@ export default function TurmasPage() {
               {turmas.map((t) => (
                 <li key={t.id} className="flex items-center justify-between">
                   <div>
-                    <Link href={`/turmas/${t.id}`} className="font-medium">
+                    <Link href={`/dashboard/turmas/${t.id}`} className="font-medium">
                       {t.name}
                     </Link>
                     <div className="text-xs text-muted-foreground">{t.description}</div>

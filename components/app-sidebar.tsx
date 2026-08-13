@@ -34,7 +34,7 @@ const data = {
     },
     {
       title: "Turmas",
-      url: "/turmas",
+      url: "/dashboard/turmas",
       icon: (
         <ListIcon
         />

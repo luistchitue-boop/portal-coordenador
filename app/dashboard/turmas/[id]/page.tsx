@@ -46,7 +46,6 @@ export default function TurmaPage() {
     setGradeValue("")
     setGradeNote("")
     setSubjectId("")
-    // could reload grades list in future
   }
 
   async function handleAddNote(e: React.FormEvent) {
@@ -60,7 +59,7 @@ export default function TurmaPage() {
     <div className="p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Turma {turmaId}</h1>
-        <Button variant="outline" onClick={() => router.push('/turmas')}>Back</Button>
+        <Button variant="outline" onClick={() => router.push('/dashboard/turmas')}>Back</Button>
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">

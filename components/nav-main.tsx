@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { usePathname, useRouter } from "next/navigation"
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -19,6 +20,9 @@ export function NavMain({
     icon?: React.ReactNode
   }[]
 }) {
+  const pathname = usePathname() || ""
+  const router = useRouter()
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -44,14 +48,30 @@ export function NavMain({
           </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title} render={<a href={item.url} /> }>
-                {item.icon}
-                <span>{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {(() => {
+            const matchLengths = items.map((item) => {
+              if (pathname === item.url) return item.url.length
+              if (item.url !== "/" && pathname.startsWith(item.url + "/")) return item.url.length
+              return 0
+            })
+            const max = Math.max(...matchLengths, 0)
+
+            return items.map((item, idx) => {
+              const isActive = matchLengths[idx] > 0 && matchLengths[idx] === max
+              return (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    isActive={isActive}
+                    onClick={() => router.push(item.url)}
+                  >
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })
+          })()}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
