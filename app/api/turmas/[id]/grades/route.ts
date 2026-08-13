@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { getServerAuthSession } from "@/lib/auth"
-import { addGrade, isTeacherManager } from "@/lib/services"
+import { addGrade, isTeacherManager, isUserAdmin } from "@/lib/services"
 
 export async function POST(req: NextRequest, context: { params: any }) {
   const session = await getServerAuthSession()
@@ -8,7 +8,8 @@ export async function POST(req: NextRequest, context: { params: any }) {
   const p = await context.params
   const turmaId = Number(p.id)
 
-  const ok = await isTeacherManager(turmaId, Number((session.user as any).id))
+  const uid = Number((session.user as any).id)
+  const ok = (await isTeacherManager(turmaId, uid)) || (await isUserAdmin(uid))
   if (!ok) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const body = await req.json()

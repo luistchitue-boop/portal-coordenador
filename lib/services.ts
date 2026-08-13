@@ -1,4 +1,4 @@
-import { db, turmas, students, enrollments, subjects, turma_subjects, grades, disciplinary_notes, turma_managers } from "./db"
+import { db, turmas, students, enrollments, subjects, turma_subjects, grades, disciplinary_notes, turma_managers, users } from "./db"
 
 export async function createTurma(data: { name: string; code?: string; description?: string; creatorId?: number }) {
   const res = await (db as any).insert(turmas).values({
@@ -80,6 +80,15 @@ export async function isTeacherManager(turmaId: number, teacherId: number) {
   return res && res.length > 0
 }
 
+export async function isUserAdmin(userId: number) {
+  if (!userId) return false
+  const res = await (db as any).select().from(users).where({ id: userId })
+  if (!res || !res.length) return false
+  const u = res[0]
+  // admin can be integer or boolean depending on driver
+  return Boolean(u.admin)
+}
+
 export async function getStudentsInTurma(turmaId: number) {
   const res = await (db as any).select().from(enrollments).where({ turma_id: turmaId })
   // fetch student rows
@@ -98,4 +107,5 @@ export default {
   addDisciplinaryNote,
   getTurmasForTeacher,
   getStudentsInTurma,
+  isUserAdmin,
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerAuthSession } from "@/lib/auth"
 import { db, turmas, turma_subjects, subjects, grades } from "@/lib/db"
-import { getStudentsInTurma } from "@/lib/services"
+import { getStudentsInTurma, isTeacherManager, isUserAdmin } from "@/lib/services"
 
 export async function GET(req: Request, context: { params: any }) {
   const session = await getServerAuthSession()
@@ -11,6 +11,10 @@ export async function GET(req: Request, context: { params: any }) {
 
   const t = await (db as any).select().from(turmas).where({ id: turmaId })
   if (!t || !t.length) return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+  const uid = Number((session.user as any).id)
+  const allowed = (await isTeacherManager(turmaId, uid)) || (await isUserAdmin(uid))
+  if (!allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const students = await getStudentsInTurma(turmaId)
 

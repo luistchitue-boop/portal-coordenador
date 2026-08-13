@@ -11,6 +11,7 @@ export default function TurmaPage() {
   const router = useRouter()
   const turmaId = params?.id
   const [students, setStudents] = useState<any[]>([])
+  const [allowed, setAllowed] = useState<boolean | null>(null)
   const [name, setName] = useState("")
   const [registration, setRegistration] = useState("")
   const [email, setEmail] = useState("")
@@ -28,7 +29,17 @@ export default function TurmaPage() {
     setStudents(data || [])
   }
 
-  useEffect(() => { if (turmaId) loadStudents() }, [turmaId])
+  async function loadPermissions() {
+    const res = await fetch(`/api/turmas/${turmaId}/permissions`)
+    if (!res.ok) {
+      setAllowed(false)
+      return
+    }
+    const data = await res.json()
+    setAllowed(Boolean(data.allowed))
+  }
+
+  useEffect(() => { if (turmaId) { loadPermissions(); loadStudents() } }, [turmaId])
 
   async function handleAddStudent(e: React.FormEvent) {
     e.preventDefault()
@@ -53,6 +64,18 @@ export default function TurmaPage() {
     if (!selectedStudent) return
     await fetch(`/api/turmas/${turmaId}/notes`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ studentId: selectedStudent, note: noteText }) })
     setNoteText("")
+  }
+
+  if (allowed === false) {
+    return (
+      <div className="p-4">
+        <h1 className="text-2xl font-semibold">Access denied</h1>
+        <p className="text-muted-foreground mt-2">You are not authorized to view this turma.</p>
+        <div className="mt-4">
+          <Button variant="outline" onClick={() => router.push('/dashboard/turmas')}>Back</Button>
+        </div>
+      </div>
+    )
   }
 
   return (
