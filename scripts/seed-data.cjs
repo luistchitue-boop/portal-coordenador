@@ -36,6 +36,13 @@ function parseEnvFile(filePath) {
 
     console.log('Seeding sample data...')
 
+    // Ensure Postgres students table has turma_id column (safe to run multiple times)
+    try {
+      await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS turma_id integer`
+    } catch (e) {
+      // ignore if table doesn't exist yet or permission issues
+    }
+
     await sql.begin(async sqlTx => {
       // insert subjects (avoid ON CONFLICT since no unique constraint)
       const subjects = ['Mathematics', 'Portuguese', 'Science', 'History', 'Geography']
@@ -78,16 +85,27 @@ function parseEnvFile(filePath) {
         if (existing.length) {
           studentIds.push(existing[0].id)
         } else {
-          const res = await sqlTx`INSERT INTO students (name, registration, email) VALUES (${s.name}, ${s.registration}, ${s.email}) RETURNING id`
+          // Assign seeded students to Turma A by default
+          const res = await sqlTx`INSERT INTO students (name, registration, email, turma_id) VALUES (${s.name}, ${s.registration}, ${s.email}, ${turmaIds[0]}) RETURNING id`
           studentIds.push(res[0].id)
         }
       }
 
-      // enroll students into Turma A (avoid duplicates)
-      for (const sid of studentIds) {
-        const exists = await sqlTx`SELECT id FROM enrollments WHERE turma_id = ${turmaIds[0]} AND student_id = ${sid}`
+      // Ensure every student belongs to an existing turma (round-robin) and has an enrollment
+      for (let i = 0; i < studentIds.length; i++) {
+        const sid = studentIds[i]
+        // check current turma assignment
+        const stu = await sqlTx`SELECT turma_id FROM students WHERE id = ${sid}`
+        let assignedTurma = (stu && stu.length && stu[0].turma_id) ? stu[0].turma_id : null
+        if (!assignedTurma) {
+          assignedTurma = turmaIds[i % turmaIds.length]
+          await sqlTx`UPDATE students SET turma_id = ${assignedTurma} WHERE id = ${sid}`
+        }
+
+        // ensure enrollment exists for that turma
+        const exists = await sqlTx`SELECT id FROM enrollments WHERE turma_id = ${assignedTurma} AND student_id = ${sid}`
         if (!exists.length) {
-          await sqlTx`INSERT INTO enrollments (turma_id, student_id, added_by) VALUES (${turmaIds[0]}, ${sid}, NULL)`
+          await sqlTx`INSERT INTO enrollments (turma_id, student_id, added_by) VALUES (${assignedTurma}, ${sid}, NULL)`
         }
       }
 

@@ -36,6 +36,7 @@ const students_sqlite = sqliteTable("students", {
   id: integer("id").primaryKey(),
   name: text("name").notNull(),
   registration: text("registration"),
+  turma_id: integer("turma_id"),
   email: text("email"),
   created_at: integer("created_at"),
 })
@@ -113,6 +114,7 @@ const students_pg = pgTable("students", {
   id: serial("id").primaryKey(),
   name: pgText("name").notNull(),
   registration: pgText("registration"),
+  turma_id: pgInteger("turma_id"),
   email: pgText("email"),
   created_at: timestamp("created_at"),
 })
@@ -198,6 +200,37 @@ if (DATABASE_URL) {
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
       name TEXT
+    )
+  `)
+
+  // Enable foreign key enforcement in SQLite
+  try {
+    connection.pragma('foreign_keys = ON')
+  } catch (e) {
+    // some environments may not support pragma method; fall back to exec
+    try { connection.exec('PRAGMA foreign_keys = ON') } catch (e) {}
+  }
+
+  // Ensure turmas table exists for FK reference
+  connection.exec(`
+    CREATE TABLE IF NOT EXISTS turmas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      code TEXT,
+      description TEXT,
+      created_at INTEGER
+    )
+  `)
+
+  connection.exec(`
+    CREATE TABLE IF NOT EXISTS students (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      registration TEXT,
+      turma_id INTEGER,
+      email TEXT,
+      created_at INTEGER,
+      FOREIGN KEY (turma_id) REFERENCES turmas(id) ON DELETE SET NULL
     )
   `)
 

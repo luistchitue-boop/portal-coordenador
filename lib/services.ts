@@ -26,6 +26,7 @@ export async function addStudentToTurma(turmaId: number, student: { name: string
   const studentRes = await (db as any).insert(students).values({
     name: student.name,
     registration: student.registration,
+    turma_id: turmaId,
     email: student.email,
     created_at: new Date(),
   }).returning('*')
