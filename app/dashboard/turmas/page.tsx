@@ -5,6 +5,14 @@ import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table"
 
 export default function TurmasPage() {
   const [turmas, setTurmas] = useState<any[]>([])
@@ -38,7 +46,7 @@ export default function TurmasPage() {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-semibold mb-4">Turmas</h1>
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+      <div className="flex flex-col gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Create turma</CardTitle>
@@ -69,18 +77,34 @@ export default function TurmasPage() {
             <CardTitle>Your turmas</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2">
-              {turmas.map((t) => (
-                <li key={t.id} className="flex items-center justify-between">
-                  <div>
-                    <Link href={`/dashboard/turmas/${t.id}`} className="font-medium">
-                      {t.name}
-                    </Link>
-                    <div className="text-xs text-muted-foreground">{t.description}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="overflow-hidden rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {turmas.map((t) => (
+                    <TableRow key={t.id}>
+                      <TableCell>
+                        <Link href={`/dashboard/turmas/${t.id}`} className="font-medium">
+                          {t.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{t.code}</TableCell>
+                      <TableCell>{t.description}</TableCell>
+                      <TableCell>
+                        <Link href={`/dashboard/turmas/${t.id}`} className="text-primary">Open</Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
