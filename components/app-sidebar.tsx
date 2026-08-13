@@ -23,18 +23,18 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  navMain: [
+    navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: (
         <LayoutDashboardIcon
         />
       ),
     },
     {
-      title: "Lifecycle",
-      url: "#",
+      title: "Turmas",
+      url: "/turmas",
       icon: (
         <ListIcon
         />
@@ -42,7 +42,7 @@ const data = {
     },
     {
       title: "Analytics",
-      url: "#",
+      url: "/dashboard",
       icon: (
         <ChartBarIcon
         />
@@ -50,7 +50,7 @@ const data = {
     },
     {
       title: "Projects",
-      url: "#",
+      url: "/",
       icon: (
         <FolderIcon
         />
@@ -58,7 +58,7 @@ const data = {
     },
     {
       title: "Team",
-      url: "#",
+      url: "/",
       icon: (
         <UsersIcon
         />
