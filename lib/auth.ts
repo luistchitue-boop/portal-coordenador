@@ -1,6 +1,8 @@
 import CredentialsProvider from "next-auth/providers/credentials"
 import { NextAuthOptions } from "next-auth"
 import { getServerSession } from "next-auth/next"
+import { connection } from "@/lib/db"
+import bcrypt from "bcryptjs"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,7 +16,21 @@ export const authOptions: NextAuthOptions = {
         const email = credentials?.email ?? ""
         const password = credentials?.password ?? ""
 
-        // Simple env-based credential check. Replace with DB lookup in production.
+        // Try DB lookup first (if the DB exists and has users)
+        try {
+          const row = connection.prepare(
+            "SELECT id, email, password, name FROM users WHERE email = ?"
+          ).get(email) as any
+          if (row && bcrypt.compareSync(password, (row as any).password)) {
+            return { id: String(row.id), name: row.name, email: row.email }
+          }
+        } catch (err) {
+          // ignore DB errors and fallback to env-based credentials
+          // eslint-disable-next-line no-console
+          console.warn("DB auth check failed, falling back to env auth", err)
+        }
+
+        // Fallback: env-based credential check (useful for quick local testing)
         if (
           email === process.env.AUTH_EMAIL &&
           password === process.env.AUTH_PASSWORD
@@ -25,6 +41,7 @@ export const authOptions: NextAuthOptions = {
             email,
           }
         }
+
         return null
       },
     }),
