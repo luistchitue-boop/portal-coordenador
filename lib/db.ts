@@ -14,6 +14,7 @@ const users_sqlite = sqliteTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   name: text("name"),
+  admin: integer("admin").default(0),
 })
 
 const turmas_sqlite = sqliteTable("turmas", {
@@ -92,6 +93,7 @@ const users_pg = pgTable("users", {
   email: pgText("email").notNull().unique(),
   password: pgText("password").notNull(),
   name: pgText("name"),
+  admin: pgInteger("admin").default(0),
 })
 
 const turmas_pg = pgTable("turmas", {
@@ -199,7 +201,8 @@ if (DATABASE_URL) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
-      name TEXT
+      name TEXT,
+      admin INTEGER DEFAULT 0
     )
   `)
 

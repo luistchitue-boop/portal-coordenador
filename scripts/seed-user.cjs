@@ -11,6 +11,8 @@ if (POSTGRES_URL) {
     const email = process.env.AUTH_EMAIL || 'test@example.com'
     const password = process.env.AUTH_PASSWORD || 'Test1234!'
     const name = process.env.AUTH_NAME || 'Test User'
+    const isAdminEnv = process.env.AUTH_IS_ADMIN || '1'
+    const adminFlag = isAdminEnv === '1' || isAdminEnv === 'true'
 
     await sql`CREATE TABLE IF NOT EXISTS users (id serial primary key, email text unique not null, password text not null, name text)`
     const existing = await sql`SELECT * FROM users WHERE email = ${email}`
@@ -20,7 +22,7 @@ if (POSTGRES_URL) {
       process.exit(0)
     }
     const hash = bcrypt.hashSync(password, 10)
-    const res = await sql`INSERT INTO users (email, password, name) VALUES (${email}, ${hash}, ${name}) RETURNING id`
+    const res = await sql`INSERT INTO users (email, password, name, admin) VALUES (${email}, ${hash}, ${name}, ${adminFlag}) RETURNING id`
     console.log('Inserted user id', res[0].id)
     await sql.end()
   })()
@@ -48,6 +50,7 @@ if (POSTGRES_URL) {
   }
 
   const hash = bcrypt.hashSync(password, 10)
-  const info = db.prepare('INSERT INTO users (email, password, name) VALUES (?, ?, ?)').run(email, hash, name)
+  const adminFlag = (process.env.AUTH_IS_ADMIN || '1') === '1'
+  const info = db.prepare('INSERT INTO users (email, password, name, admin) VALUES (?, ?, ?, ?)').run(email, hash, name, adminFlag ? 1 : 0)
   console.log('Inserted user id', info.lastInsertRowid)
 }
