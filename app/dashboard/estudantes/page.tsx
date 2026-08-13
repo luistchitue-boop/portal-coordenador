@@ -12,6 +12,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
 export default function Page() {
   const [students, setStudents] = useState<any[]>([])
@@ -41,6 +42,15 @@ export default function Page() {
     if (!confirm('Delete student?')) return
     await fetch(`/api/students/${id}`, { method: 'DELETE' })
     load()
+  }
+
+  function initials(name = "") {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
   }
 
   return (
@@ -80,17 +90,26 @@ export default function Page() {
                 </TableHeader>
                 <TableBody>
                   {students.map((s) => (
-                    <TableRow key={s.id}>
-                      <TableCell>
-                        <div className="font-medium">{s.name}</div>
-                        <div className="text-xs text-muted-foreground">{s.email}</div>
-                      </TableCell>
-                      <TableCell>{s.registration}</TableCell>
-                      <TableCell>{s.email}</TableCell>
-                      <TableCell>
-                        <button className="text-sm text-destructive" onClick={() => handleDelete(s.id)}>Delete</button>
-                      </TableCell>
-                    </TableRow>
+                        <TableRow key={s.id}>
+                          <TableCell className="w-16">
+                            <Avatar size="sm">
+                              {s.avatar_url ? (
+                                <AvatarImage src={s.avatar_url} alt={s.name} />
+                              ) : (
+                                <AvatarFallback>{initials(s.name)}</AvatarFallback>
+                              )}
+                            </Avatar>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{s.name}</div>
+                            <div className="text-xs text-muted-foreground">{s.email}</div>
+                          </TableCell>
+                          <TableCell>{s.registration}</TableCell>
+                          <TableCell>{s.email}</TableCell>
+                          <TableCell>
+                            <button className="text-sm text-destructive" onClick={() => handleDelete(s.id)}>Delete</button>
+                          </TableCell>
+                        </TableRow>
                   ))}
                 </TableBody>
               </Table>
