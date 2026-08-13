@@ -4,6 +4,14 @@ import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table"
 
 export default function Page() {
   const [students, setStudents] = useState<any[]>([])
@@ -38,7 +46,7 @@ export default function Page() {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-semibold">Estudantes</h1>
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
+      <div className="flex flex-col gap-4 mt-4">
         <Card>
           <CardHeader>
             <CardTitle>Add student</CardTitle>
@@ -60,19 +68,33 @@ export default function Page() {
             <CardTitle>All students</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2">
-              {students.map((s) => (
-                <li key={s.id} className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">{s.name}</div>
-                    <div className="text-xs text-muted-foreground">{s.email}</div>
-                  </div>
-                  <div>
-                    <button className="text-sm text-destructive" onClick={() => handleDelete(s.id)}>Delete</button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="overflow-hidden rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Registration</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {students.map((s) => (
+                    <TableRow key={s.id}>
+                      <TableCell>
+                        <div className="font-medium">{s.name}</div>
+                        <div className="text-xs text-muted-foreground">{s.email}</div>
+                      </TableCell>
+                      <TableCell>{s.registration}</TableCell>
+                      <TableCell>{s.email}</TableCell>
+                      <TableCell>
+                        <button className="text-sm text-destructive" onClick={() => handleDelete(s.id)}>Delete</button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
