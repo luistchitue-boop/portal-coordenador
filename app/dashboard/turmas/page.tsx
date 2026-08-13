@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -19,6 +20,7 @@ export default function TurmasPage() {
   const [name, setName] = useState("")
   const [code, setCode] = useState("")
   const [description, setDescription] = useState("")
+  const { data: session, status } = useSession()
 
   async function load() {
     const res = await fetch("/api/turmas")
@@ -47,30 +49,32 @@ export default function TurmasPage() {
     <div className="p-4">
       <h1 className="text-2xl font-semibold mb-4">Turmas</h1>
       <div className="flex flex-col gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Create turma</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreate} className="space-y-3">
-              <div>
-                <label className="block text-sm mb-1">Name</label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} required />
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Code</label>
-                <Input value={code} onChange={(e) => setCode(e.target.value)} />
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Description</label>
-                <Input value={description} onChange={(e) => setDescription(e.target.value)} />
-              </div>
-              <CardFooter className="justify-end">
-                <Button type="submit">Create</Button>
-              </CardFooter>
-            </form>
-          </CardContent>
-        </Card>
+        {status !== 'loading' && (session as any)?.user?.admin ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Create turma</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreate} className="space-y-3">
+                <div>
+                  <label className="block text-sm mb-1">Name</label>
+                  <Input value={name} onChange={(e) => setName(e.target.value)} required />
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Code</label>
+                  <Input value={code} onChange={(e) => setCode(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Description</label>
+                  <Input value={description} onChange={(e) => setDescription(e.target.value)} />
+                </div>
+                <CardFooter className="justify-end">
+                  <Button type="submit">Create</Button>
+                </CardFooter>
+              </form>
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Card>
           <CardHeader>
