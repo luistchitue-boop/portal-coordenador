@@ -18,11 +18,21 @@ export const authOptions: NextAuthOptions = {
 
         // Try DB lookup first (if the DB exists and has users)
         try {
-          const row = connection.prepare(
-            "SELECT id, email, password, name FROM users WHERE email = ?"
-          ).get(email) as any
-          if (row && bcrypt.compareSync(password, (row as any).password)) {
-            return { id: String(row.id), name: row.name, email: row.email }
+          // SQLite `better-sqlite3` connection exposes `prepare`/`run`
+          if ((connection as any).prepare) {
+            const row = (connection as any).prepare(
+              "SELECT id, email, password, name, admin FROM users WHERE email = ?"
+            ).get(email) as any
+            if (row && bcrypt.compareSync(password, (row as any).password)) {
+              return { id: String(row.id), name: row.name, email: row.email, admin: Boolean(row.admin) }
+            }
+          } else {
+            // Postgres `postgres` client supports tagged template queries
+            const res = await (connection as any)`SELECT id, email, password, name, admin FROM users WHERE email = ${email}`
+            const row = res && res.length ? res[0] : null
+            if (row && bcrypt.compareSync(password, row.password)) {
+              return { id: String(row.id), name: row.name, email: row.email, admin: Boolean(row.admin) }
+            }
           }
         } catch (err) {
           // ignore DB errors and fallback to env-based credentials
@@ -39,6 +49,7 @@ export const authOptions: NextAuthOptions = {
             id: "1",
             name: process.env.AUTH_NAME ?? "User",
             email,
+            admin: true,
           }
         }
 
@@ -47,9 +58,16 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async jwt({ token, user }: any) {
+      if (user) {
+        if (typeof (user as any).admin !== "undefined") token.admin = (user as any).admin
+      }
+      return token
+    },
     async session({ session, token }) {
       if (token && session.user) {
         ;(session.user as any).id = token.sub
+        ;(session.user as any).admin = Boolean((token as any).admin)
       }
       return session
     },

@@ -7,6 +7,16 @@ export async function DELETE(req: Request, context: { params: any }) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const id = Number(context.params.id)
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 })
+  const uid = Number((session.user as any).id)
+  // check student's turma
+  const srows = await (db as any).select().from(students).where({ id })
+  if (!srows || !srows.length) return NextResponse.json({ error: "Not found" }, { status: 404 })
+  const student = srows[0]
+  const turmaId = student.turma_id
+  const services = await import('@/lib/services')
+  const isAdmin = await services.isUserAdmin(uid)
+  const isManager = turmaId ? await services.isTeacherManager(turmaId, uid) : false
+  if (!isAdmin && !isManager) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   // Support both sqlite and postgres connection types
   if ((connection as any).run) {

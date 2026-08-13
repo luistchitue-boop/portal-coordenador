@@ -8,8 +8,24 @@ export async function GET(req: NextRequest) {
   if (!session || !((session.user as any)?.id)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   // For now return all turmas to any authenticated user so they can see data
-  const rows = await (db as any).select().from(turmas)
-  return NextResponse.json(rows || [])
+  // If user is admin return all turmas
+  const uid = Number((session.user as any).id)
+  const isAdmin = await services.isUserAdmin(uid)
+  if (isAdmin) {
+    const rows = await (db as any).select().from(turmas)
+    return NextResponse.json(rows || [])
+  }
+
+  // Otherwise return only turmas the user manages
+  const managed = await services.getTurmasForTeacher(uid)
+  if (!managed || managed.length === 0) return NextResponse.json([])
+  const turmaIds = managed.map((m: any) => m.turma_id)
+  const results: any[] = []
+  for (const id of turmaIds) {
+    const t = await (db as any).select().from(turmas).where({ id })
+    if (t && t.length) results.push(t[0])
+  }
+  return NextResponse.json(results)
 }
 
 export async function POST(req: NextRequest) {
